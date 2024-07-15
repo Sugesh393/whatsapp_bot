@@ -64,6 +64,8 @@ app_license = "mit"
 # 	"filters": "whatsapp_bot.utils.jinja_filters"
 # }
 
+fixtures = ["Server Script"]
+
 # Installation
 # ------------
 

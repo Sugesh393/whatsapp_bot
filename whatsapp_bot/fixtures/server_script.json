@@ -1,0 +1,40 @@
+[
+ {
+  "allow_guest": 1,
+  "api_method": "whatsapp_webhook",
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2024-07-15 12:13:42.792765",
+  "module": null,
+  "name": "Whatsapp Webhook",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": null,
+  "script": "def verify_webhook():\n    VERIFY_TOKEN = \"CHATBOT\"\n    # frappe.log_error(\"Entered verify webhook\")\n    try:\n        token_sent = frappe.form_dict.get('hub.verify_token')\n        mode = frappe.form_dict.get('hub.mode')\n        challenge = frappe.form_dict.get('hub.challenge')\n\n        if mode and token_sent:\n            if mode == 'subscribe' and token_sent == VERIFY_TOKEN:\n                frappe.log_error('Webhook verified successfully', 'WhatsApp Webhook Verification')\n                return challenge\n            else:\n                frappe.log_error('Verification token mismatch', 'WhatsApp Webhook Verification Error')\n                return 'Verification token mismatch', 403\n        else:\n            frappe.log_error('Missing mode or token', 'WhatsApp Webhook Verification Error')\n            return 'Missing mode or token', 400\n    except Exception as e:\n        frappe.log_error(frappe.get_traceback(), 'WhatsApp Webhook Verification Error')\n        return 'Error verifying token', 500\n\ndef handle_message():\n    try:\n        data = frappe.form_dict\n        # frappe.log_error(data, 'Webhook Raw Payload')\n        \n        for entry in data.get('entry'):\n            for message in entry.get('changes'):\n                from_number = message['value']['messages'][0]['from']\n                body = message['value']['messages'][0]['text']['body']\n                \n                conversation_name = frappe.db.get_value('Whatsapp Conversation', {'user_number': from_number}, 'name')\n                if not conversation_name:\n                    # Create a new conversation if it doesn't exist\n                    conversation = frappe.get_doc({\n                        \"doctype\": \"Whatsapp Conversation\",\n                        \"user_number\": from_number\n                    })\n                    conversation.insert(ignore_permissions=True)\n                    conversation_name = conversation.name\n\n                # Fetch the conversation document\n                conversation = frappe.get_doc('Whatsapp Conversation', conversation_name)\n        \n                # Process message and determine bot response based on state\n                response_message = process_message(conversation, body)\n        \n                # Save the last message and update state\n                conversation.last_message = body\n                conversation.save(ignore_permissions=True)\n                frappe.db.commit()\n        \n                # Send response back to the user\n                send_whatsapp_message(from_number, response_message)\n        \n        return \"Success from handle_messgae\"\n    except:\n        frappe.log_error('WhatsApp Webhook Verification Error')\n        return 'Error verifying token', 500\n        \ndef process_message(conversation, message):\n    if conversation.bot_state == \"initial\":\n        response_message = \"Hello! How can I help you today?\"\n        conversation.bot_state = \"awaiting_input\"\n        \n    elif conversation.bot_state == \"awaiting_input\":\n        if \"order\" in message:\n            response_message = \"Would you like to place a new order or check the status of an existing order?\"\n            conversation.bot_state = \"order_query\"\n        elif \"help\" in message:\n            response_message = \"Sure! What do you need help with?\"\n            conversation.bot_state = \"help_query\"\n        else:\n            response_message = \"I'm sorry, I didn't understand that. Could you please rephrase?\"\n    \n    elif conversation.bot_state == \"order_query\":\n        if \"new\" in message:\n            response_message = \"Please provide the details of your new order.\"\n            conversation.bot_state = \"new_order_details\"\n        elif \"status\" in message:\n            response_message = \"Please provide your order ID to check the status.\"\n            conversation.bot_state = \"order_status\"\n        else:\n            response_message = \"I didn't catch that. Do you want to place a new order or check an existing one?\"\n    \n    else:\n        response_message = \"I'm not sure how to help with that. Please try again.\"\n        conversation.bot_state = \"initial\"\n\n    return response_message\n\ndef send_whatsapp_message(to, body):\n    YOUR_PHONE_NUMBER_ID = \"323181764217379\"\n    YOUR_ACCESS_TOKEN = \"EAAQ4h18v3ZBMBO7mZAhaJ2GiRVFrYB6t3PuSD6wGk3UaTqzFJWZA3vECZCsYT7197y4QKkfk42IwVM3comGaZBZA2XmDiqbrjgvWi6jxCqJnYPXPd6ExHKfhu6jDvjCtoLEtF7jNHy4hCgQi8VJvIgdYJDroq0pgZCxCyf2fpXvSbOWl5InJavPqbYxwZBTE2VtD7xrqUzmViCAJFz27XL4ZD\"\n    \n    url = f'https://graph.facebook.com/v19.0/{YOUR_PHONE_NUMBER_ID}/messages'\n    headers = {\n        'Authorization': f'Bearer {YOUR_ACCESS_TOKEN}',\n        'Content-Type': 'application/json'\n    }\n    payload = {\n        \"messaging_product\": \"whatsapp\",\n        \"to\": to,\n        \"type\": \"text\",\n        \"text\": {\n            \"body\": body\n        }\n    }\n\n    response = frappe.make_post_request(url, headers=headers, data=json.dumps(payload))\n    return \"Success from send_whatsapp\"\n    \nif frappe.request.method == 'GET':\n    frappe.response['message'] = verify_webhook()\nif frappe.request.method == 'POST':\n    frappe.response['message'] = handle_message()\n",
+  "script_type": "API"
+ },
+ {
+  "allow_guest": 1,
+  "api_method": "verify_token",
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2024-07-12 15:57:18.616179",
+  "module": null,
+  "name": "Testing",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": null,
+  "script": "frappe.log_error(\"entered\")\nVERIFY_TOKEN = \"ASDFGH\"\n\ndef verify_webhook():\n    frappe.log_error('verify initiated')\nif frappe.request.method == 'GET':\n        token_sent = frappe.form_dict.get('hub.verify_token')\n        if VERIFY_TOKEN == token_sent:\n            verify_webhook()\n        ",
+  "script_type": "API"
+ }
+]

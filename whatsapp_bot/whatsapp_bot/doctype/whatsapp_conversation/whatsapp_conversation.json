@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "WH-.#####",
+ "creation": "2024-07-12 12:35:25.985365",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user_number",
+  "bot_state",
+  "last_message",
+  "created_at",
+  "updated_at",
+  "conversation_history"
+ ],
+ "fields": [
+  {
+   "description": "The phone number of the user interacting with the bot.",
+   "fieldname": "user_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "User Number",
+   "reqd": 1
+  },
+  {
+   "default": "initial",
+   "description": "The current state of the bot in the conversation.",
+   "fieldname": "bot_state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Bot State",
+   "options": "initial\nawaiting_input\norder_query\nnew_order_details\norder_status\nhelp_query",
+   "reqd": 1
+  },
+  {
+   "description": "The last message received from the user.",
+   "fieldname": "last_message",
+   "fieldtype": "Text",
+   "label": "Last Message"
+  },
+  {
+   "default": "Now",
+   "description": "The timestamp when the conversation started.",
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Created At",
+   "reqd": 1
+  },
+  {
+   "default": "Now",
+   "description": "The timestamp when the conversation was last updated.",
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Updated At",
+   "reqd": 1
+  },
+  {
+   "description": "The complete history of the conversation.",
+   "fieldname": "conversation_history",
+   "fieldtype": "Long Text",
+   "label": "Conversation History"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-13 10:32:27.990502",
+ "modified_by": "Administrator",
+ "module": "Whatsapp Bot",
+ "name": "Whatsapp Conversation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
